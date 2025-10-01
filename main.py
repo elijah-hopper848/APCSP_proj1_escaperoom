@@ -1,21 +1,17 @@
 from random import randint
 
-from classes import Describable
+from classes import Player
 from storyclasses import CaveRoom
 
 INVALID_COMMAND_QUOTES = ["What?", "Speak english.", "I don't know what you mean.", "What do you mean?"]
-
-INVENTORY = []
 ROOMS = {
 	"cave": CaveRoom()
 }
 
-CURRENT_ROOM = ROOMS["cave"]
+MAIN_PLAYER = Player(init_room=ROOMS["cave"])
 
-def take(item: str):
-	pass
-
-print("Commands:\nexamine [thing]\ntake [thing]\nuse [thing] on [other thing]\nuse [thing]")
+print("Commands:\nexamine [thing]\ntake [thing]\nuse [thing]\nuse [thing] with [item]\n")
+print(MAIN_PLAYER.current_room.describe())
 
 while True:
 	text = input("> ").lower()
@@ -24,19 +20,33 @@ while True:
 	command = parts[0]
 
 	if command == "examine":
-		target = len(parts) == 1 and "room" or parts[1]
+		if len(parts) == 1:
+			print("Examine what?")
+			continue
 
-		if target == "room":
-			print(CURRENT_ROOM.describe())
-		elif CURRENT_ROOM.features != None:
-			thing = CURRENT_ROOM.features.get(target)
+		print(MAIN_PLAYER.examine(parts[1]))
+	elif command == "take":
+		if len(parts) == 1:
+			print("Take what?")
+			continue
 
-			if thing == None:
-				print(f"There is no '{target}'")
-				continue
+		print(MAIN_PLAYER.take(parts[1]))
+	elif command == "use":
+		if len(parts) == 1:
+			print("Use what?")
+			continue
+		
+		# valid, technically
+		# not using an item on something
+		if len(parts) == 2:
+			print(MAIN_PLAYER.use(parts[1], None))
+			continue
 
-			print(f"You examine the {target}...")
-			print(thing.examine())
+		if len(parts) <= 3:
+			print("With what?")
+			continue
+		
+		print(MAIN_PLAYER.use(parts[1], parts[3]))
 	else:
 		quote = INVALID_COMMAND_QUOTES[randint(0, len(INVALID_COMMAND_QUOTES) - 1)]
 
