@@ -1,7 +1,9 @@
 from random import randint
 
+from utility.ANSI import tint16, t_not_ok, BRIGHT_BLACK
+
 from classes import Player
-from storyclasses import CaveRoom
+from rooms.cave import CaveRoom
 
 INVALID_COMMAND_QUOTES = ["What?", "Speak english.", "I don't know what you mean.", "What do you mean?"]
 ROOMS = {
@@ -10,44 +12,44 @@ ROOMS = {
 
 MAIN_PLAYER = Player(init_room=ROOMS["cave"])
 
-print("Commands:\nexamine [thing]\ntake [thing]\nuse [thing]\nuse [thing] with [item]\n")
+print(tint16("Commands:\n examine [thing]\n take [thing]\n use [thing]\n use [thing] with [item]\n", BRIGHT_BLACK))
 print(MAIN_PLAYER.current_room.describe())
 
-while True:
-	text = input("> ").lower()
-	parts = text.split(" ")
-
-	command = parts[0]
-
+def parse(args: list[str]) -> str:
+	command = args[0]
+	
 	if command == "examine":
-		if len(parts) == 1:
-			print("Examine what?")
-			continue
+		if len(args) == 1:
+			return t_not_ok("Examine what?")
 
-		print(MAIN_PLAYER.examine(parts[1]))
+		return MAIN_PLAYER.examine(args[1])
 	elif command == "take":
-		if len(parts) == 1:
-			print("Take what?")
-			continue
+		if len(args) == 1:
+			return t_not_ok("Take what?")
 
-		print(MAIN_PLAYER.take(parts[1]))
+		return MAIN_PLAYER.take(args[1])
 	elif command == "use":
-		if len(parts) == 1:
-			print("Use what?")
-			continue
+		if len(args) == 1:
+			return t_not_ok("Use what?")
 		
 		# valid, technically
 		# not using an item on something
-		if len(parts) == 2:
-			print(MAIN_PLAYER.use(parts[1], None))
-			continue
+		if len(args) == 2:
+			return MAIN_PLAYER.use(args[1], None)
 
-		if len(parts) <= 3:
-			print("With what?")
-			continue
+		if len(args) <= 3:
+			return t_not_ok("With what?")
 		
-		print(MAIN_PLAYER.use(parts[1], parts[3]))
+		return MAIN_PLAYER.use(args[1], args[3])
 	else:
 		quote = INVALID_COMMAND_QUOTES[randint(0, len(INVALID_COMMAND_QUOTES) - 1)]
 
-		print(quote)
+		return t_not_ok(quote)
+
+while True:
+	text = MAIN_PLAYER.prompt("> ").lower()
+	args = text.split(" ")
+
+	output = parse(args)
+	
+	MAIN_PLAYER.display(output)
