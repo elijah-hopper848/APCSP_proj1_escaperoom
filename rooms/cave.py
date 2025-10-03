@@ -1,25 +1,35 @@
 from classes import Feature, Room, Player
-from utility.ANSI import t_not_ok
+from utility.ANSI import tint_bad
+
+TARGET_FUEL_LEVEL = 3
 
 class CaveDoor(Feature):
-	def __init__(self) -> None:
+	def __init__(self, next_room: Room) -> None:
 		super().__init__()
 
+		self.next_room = next_room
 		self.is_locked = True
 
 	def use(self, actor: Player, item: str | None):
 		if item != None:
-			return t_not_ok("I can't use this here.")
+			return tint_bad("I can't use this here.")
 		
 		if self.is_locked:
-			return t_not_ok("The door doesn't budge.")
+			return tint_bad("The door doesn't budge.")
 		
-		return "door unlocked go to next room how am i going to implement this?"
+		actor.change_room(self.next_room)
+
+		return actor.examine("room")
 
 	def describe(self) -> str:
 		return "and a door near the furnace"
 	def examine(self, actor: Player) -> str:
-		return "It's a heavy wooden door, it won't budge."
+		output = "It's a heavy wooden door."
+
+		if self.is_locked:
+			output += " It doesn't budge."
+
+		return output
 class CaveFurnace(Feature):
 	def __init__(self, linked_door: CaveDoor) -> None:
 		self.is_burning = False
@@ -32,7 +42,7 @@ class CaveFurnace(Feature):
 		
 		self.is_burning = True
 		
-		self.linked_door.is_locked = self.fuel_level < 3
+		self.linked_door.is_locked = self.fuel_level < TARGET_FUEL_LEVEL
 	def extinguish(self):
 		self.is_burning = False
 		self.fuel_level = 0
@@ -46,7 +56,7 @@ class CaveFurnace(Feature):
 
 				return "You extinguish the furnace."
 
-			return t_not_ok("I can't use the furnace while it's lit, I'll get burnt!")
+			return tint_bad("I can't use the furnace while it's lit, I'll get burnt!")
 
 		if item == None:
 			if actor.prompt("Do you want to ignite the furnace? (y/n) ") != "y":
@@ -55,9 +65,16 @@ class CaveFurnace(Feature):
 			if self.fuel_level > 0:
 				self.ignite()
 
-				return "You ignite the furnace with the planks of wood."
+				output = "You ignite the furnace with the planks of wood."
+
+				if self.fuel_level >= TARGET_FUEL_LEVEL:
+					output += " You hear the door click..."
+				else:
+					output += " Nothing happened..."
+
+				return output
 			
-			return t_not_ok("I can't ignite the furnace without any fuel inside it.")
+			return tint_bad("I can't ignite the furnace without any fuel inside it.")
 		elif item == "wood":
 			self.fuel_level += 1
 
@@ -65,7 +82,7 @@ class CaveFurnace(Feature):
 
 			return "You place the planks inside the furnace."
 
-		return t_not_ok("I can't use this here.")
+		return tint_bad("I can't use this here.")
 
 	def describe(self) -> str:
 		return "a furnace in the corner of the room"
@@ -101,8 +118,8 @@ class CaveRoom(Room):
 	description = "You are in a cave."
 	items = {"wood": "a couple planks of \x1b[1mwood\x1b[22m"}
 
-	def __init__(self) -> None:
-		door = CaveDoor()
+	def __init__(self, next_room: Room) -> None:
+		door = CaveDoor(next_room)
 		furnace = CaveFurnace(door)
 
 		self.features = {

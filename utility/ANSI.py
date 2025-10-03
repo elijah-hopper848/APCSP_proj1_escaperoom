@@ -23,5 +23,5 @@ def tint16(text: str, color: int, bg: bool = False) -> str:
 	return f"\x1b[{color}m{text}\x1b[0m"
 
 # great name i know
-def t_not_ok(text: str) -> str:
+def tint_bad(text: str) -> str:
 	return tint16(text, BRIGHT_RED)
