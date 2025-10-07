@@ -4,8 +4,8 @@ from utility.ANSI import tint_bad
 TARGET_FUEL_LEVEL = 3
 
 class CaveDoor(Feature):
-	def __init__(self, next_room: Room) -> None:
-		super().__init__()
+	def __init__(self, room: Room, next_room: Room) -> None:
+		super().__init__(room)
 
 		self.next_room = next_room
 		self.is_locked = True
@@ -31,7 +31,9 @@ class CaveDoor(Feature):
 
 		return output
 class CaveFurnace(Feature):
-	def __init__(self, linked_door: CaveDoor) -> None:
+	def __init__(self, room: Room, linked_door: CaveDoor) -> None:
+		super().__init__(room)
+
 		self.is_burning = False
 		self.fuel_level = 0
 		
@@ -119,8 +121,8 @@ class CaveRoom(Room):
 	items = {"wood": "a couple planks of \x1b[1mwood\x1b[22m"}
 
 	def __init__(self, next_room: Room) -> None:
-		door = CaveDoor(next_room)
-		furnace = CaveFurnace(door)
+		door = CaveDoor(self, next_room)
+		furnace = CaveFurnace(self, door)
 
 		self.features = {
 			"furnace": furnace,

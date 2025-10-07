@@ -22,6 +22,9 @@ class Feature(Describable, Examinable):
 	Features are interactive, you can "use" them, optionally with an item.
 	"""
 
+	def __init__(self, room: Room) -> None:
+		self.room = room
+
 	def use(self, actor: Player, item: str | None) -> str:
 		return "I can't use this here."
 class Room(Describable):
@@ -103,7 +106,9 @@ class Player(Describable):
 		return value
 	def display(self, text: str):
 		print(text)
-	
+	def exit(self):
+		exit()
+
 	def describe(self) -> str:
 		if len(self.inventory) == 0:
 			return f"You aren't carrying anything."
